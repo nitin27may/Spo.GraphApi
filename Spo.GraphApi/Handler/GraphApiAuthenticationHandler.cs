@@ -2,54 +2,56 @@
 using Azure.Identity;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Spo.GraphApi.Models;
 using System.Net.Http.Headers;
 using System.Text;
 
-namespace Spo.GraphApi.Handler
+namespace Spo.GraphApi.Handler;
+
+internal class GraphApiAuthenticationHandler : DelegatingHandler
 {
-    internal class GraphApiAuthenticationHandler : DelegatingHandler
+    private readonly IDistributedCache _distributedCache;
+    private readonly ILogger<GraphApiAuthenticationHandler> _logger;
+    private readonly GraphApiOptions _graphApiOptions;
+    public GraphApiAuthenticationHandler(
+        IDistributedCache distributedCache,
+        ILogger<GraphApiAuthenticationHandler> logger,
+        IOptions<GraphApiOptions> options)
     {
+        _distributedCache = distributedCache;
+        _logger = logger;
+        _graphApiOptions = options.Value;
+        InnerHandler = new HttpClientHandler();
+    }
 
-        private readonly IDistributedCache _distributedCache;
-        private readonly ILogger<GraphApiAuthenticationHandler> _logger;
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        string accessToken = await GetAccessTokenAsync(cancellationToken);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+    }
 
-        public GraphApiAuthenticationHandler(
-            IDistributedCache distributedCache,
-            ILogger<GraphApiAuthenticationHandler> logger)
+    public async Task<string> GetAccessTokenAsync(CancellationToken cancellationToken = default)
+    {
+        var tokenByteArray = await _distributedCache.GetAsync("ApplicationCacheKeys.GrapApiToken", cancellationToken);
+        if (tokenByteArray?.Length > 0)
         {
-            _distributedCache = distributedCache;
-            _logger = logger;
+            return Encoding.UTF8.GetString(tokenByteArray);
         }
+        string[] scopes = new[] { $"{_graphApiOptions.Scope}" };
 
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            string accessToken = await GetAccessTokenAsync(cancellationToken);
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-            return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
-        }
+        ClientSecretCredential clientSecretCredential = new ClientSecretCredential(
+                        _graphApiOptions.TenantId,
+                        _graphApiOptions.ClientId,
+                        _graphApiOptions.SecretId);
+        TokenRequestContext tokenRequestContext = new TokenRequestContext(scopes);
+        AccessToken tokenResponse = await clientSecretCredential.GetTokenAsync(tokenRequestContext, cancellationToken);
 
-        public async Task<string> GetAccessTokenAsync(CancellationToken cancellationToken = default)
-        {
-            var tokenByteArray = await _distributedCache.GetAsync("ApplicationCacheKeys.GrapApiToken", cancellationToken);
-            if (tokenByteArray?.Length > 0)
-            {
-                return Encoding.UTF8.GetString(tokenByteArray);
-            }
-            var scopes = new[] { "https://graph.microsoft.com/.default" };
-            var tenantId = "tenant_name.onmicrosoft.com";
-            var clientId = "aad_app_id";
-            var clientSecret = "client_secret";
-            var clientSecretCredential = new ClientSecretCredential(
-                            tenantId, clientId, clientSecret);
-            var tokenRequestContext = new TokenRequestContext(scopes);
-            var tokenResponse = await clientSecretCredential.GetTokenAsync(tokenRequestContext, cancellationToken);
+        TimeSpan expirationTime = (tokenResponse.ExpiresOn.UtcDateTime - DateTime.UtcNow).Subtract(TimeSpan.FromMinutes(3));
+        DistributedCacheEntryOptions cacheEntryOptions = new DistributedCacheEntryOptions().SetAbsoluteExpiration(expirationTime);
+        _distributedCache.Set("ApplicationCacheKeys.GrapApiToken", Encoding.UTF8.GetBytes(tokenResponse.Token), cacheEntryOptions);
 
-            TimeSpan expirationTime = (tokenResponse.ExpiresOn.UtcDateTime - DateTime.UtcNow).Subtract(TimeSpan.FromMinutes(3));
-            var cacheEntryOptions = new DistributedCacheEntryOptions()
-                .SetAbsoluteExpiration(expirationTime);
-            _distributedCache.Set("ApplicationCacheKeys.GrapApiToken", Encoding.UTF8.GetBytes(tokenResponse.Token), cacheEntryOptions);
-
-            return tokenResponse.Token;
-        }
+        return tokenResponse.Token;
     }
 }
