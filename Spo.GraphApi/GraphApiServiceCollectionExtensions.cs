@@ -11,15 +11,9 @@ public static class GraphApiServiceCollectionExtensions
     {
         services.Configure<GraphApiOptions>(
             config.GetSection(GraphApiOptions.GraphApiSettings));
-
-        return services;
-    }
-
-    public static IServiceCollection AddMyDependencyGroup(
-         this IServiceCollection services)
-    {
         services.AddScoped<IGraphApiCientFactory, GraphApiCientFactory>();
-
         return services;
     }
 }
+
+

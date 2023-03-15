@@ -7,6 +7,6 @@ public class GraphApiOptions
     public string ClientId { get; set; } = string.Empty;
     public string SecretId { get; set; } = string.Empty;
     public string Scope { get; set; } = string.Empty;
-    public string BaseUri { get; set; } = string.Empty;
-
+    public string BaseGraphUri { get; set; } = string.Empty;
+    public string BaseSpoSiteUri { get; set; } = string.Empty;
 }

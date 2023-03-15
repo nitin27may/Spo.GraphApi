@@ -6,7 +6,7 @@ using Spo.GraphApi.Models;
 
 namespace Spo.GraphApi
 {
-    internal class GraphApiCientFactory : IGraphApiCientFactory
+    public class GraphApiCientFactory : IGraphApiCientFactory
     {
         private readonly ILoggerFactory _loggerFactory;
         private readonly IOptions<GraphApiOptions> _options;
@@ -24,7 +24,7 @@ namespace Spo.GraphApi
             GraphApiAuthenticationHandler authHandler = new GraphApiAuthenticationHandler(_distributedCache, _loggerFactory.CreateLogger<GraphApiAuthenticationHandler>(), _options);
             HttpClient httpClient = new HttpClient(authHandler);
 
-            return new GraphApiCient(httpClient, _options.Value, _loggerFactory.CreateLogger<GraphApiCient>(), _distributedCache);
+            return new GraphApiCient(httpClient, _options.Value, _loggerFactory.CreateLogger<GraphApiCient>());
         }
     }
 }

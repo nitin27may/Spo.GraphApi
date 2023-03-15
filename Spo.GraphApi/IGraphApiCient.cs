@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Spo.GraphApi.Models;
 
-namespace Spo.GraphApi
+namespace Spo.GraphApi;
+
+public interface IGraphApiCient
 {
-    internal interface IGraphApiCient
-    {
-    }
+    Task<SiteDetails> GetSiteId(string siteName);
+    Task<List<Drive>> GetDrives(string siteId);
+    Task<FileResponse> UploadFile(CustomFile customFile);
 }
