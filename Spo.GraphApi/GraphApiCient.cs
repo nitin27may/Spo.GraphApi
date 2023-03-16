@@ -22,6 +22,7 @@ internal class GraphApiCient : IGraphApiCient
     {
         return await GetAsync<SiteDetails>($"/sites/{_graphApiOptions.BaseSpoSiteUri}:/sites/{siteName}");
     }
+
     public async Task<List<Drive>> GetDrives(string siteId)
     {
         return (await GetAsync<DriveDetails>($"/sites/{siteId}/drives?$select=id,name,description,webUrl")).value;
@@ -31,7 +32,7 @@ internal class GraphApiCient : IGraphApiCient
     {
         await using var msStream = new MemoryStream();
         await customFile.File.CopyToAsync(msStream);
-        return await PutAsync<Stream, FileResponse>($"drives/{customFile.DriveId}/items/root:/{customFile.Name}:/content?@microsoft.graph.conflictBehavior=rename", msStream.ToArray()); ;
+        return await UploadAsync<FileResponse>($"drives/{customFile.DriveId}/items/root:/{customFile.Name}:/content?@microsoft.graph.conflictBehavior=rename", msStream.ToArray()); ;
     }
 
     private async Task<T> GetAsync<T>(string endpoint, CancellationToken cancellationToken = default)
@@ -70,12 +71,11 @@ internal class GraphApiCient : IGraphApiCient
         return JsonSerializer.Deserialize<TOut>(content);
     }
 
-    private async Task<TOut> PutAsync<TIn, TOut>(string endpoint, byte[] data, CancellationToken cancellationToken = default)
+    private async Task<TOut> PutAsync<TIn, TOut>(string endpoint, TIn data, CancellationToken cancellationToken = default)
     {
-        var multiPartData = new ByteArrayContent(data);
-        _httpClient.DefaultRequestHeaders.Add("ContentType", "application/octet-stream");
+        var stringContent = new StringContent(JsonSerializer.Serialize(data), Encoding.UTF8, "application/json");
         HttpResponseMessage responseMessage = await _httpClient
-            .PutAsync($"{_graphApiOptions.BaseGraphUri}/{endpoint}", multiPartData, cancellationToken);
+            .PutAsync($"{_graphApiOptions.BaseGraphUri}/{endpoint}", stringContent, cancellationToken);
         var content = await responseMessage.Content.ReadAsStringAsync(cancellationToken);
 
         if (!responseMessage.IsSuccessStatusCode)
@@ -106,5 +106,25 @@ internal class GraphApiCient : IGraphApiCient
         }
 
         return JsonSerializer.Deserialize<T>(content);
+    }
+
+    private async Task<TOut> UploadAsync<TOut>(string endpoint, byte[] data, CancellationToken cancellationToken = default)
+    {
+        var multiPartData = new ByteArrayContent(data);
+        _httpClient.DefaultRequestHeaders.Add("ContentType", "application/octet-stream");
+        HttpResponseMessage responseMessage = await _httpClient
+            .PutAsync($"{_graphApiOptions.BaseGraphUri}/{endpoint}", multiPartData, cancellationToken);
+        var content = await responseMessage.Content.ReadAsStringAsync(cancellationToken);
+
+        if (!responseMessage.IsSuccessStatusCode)
+        {
+            var requestMessage = await responseMessage.RequestMessage.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogError("Error calling Endpoint: POST {@Endpoint}. Request: {@Request}, Response: {@Response}.",
+                responseMessage.RequestMessage.RequestUri, requestMessage, content);
+
+            throw new GraphApiException(responseMessage.StatusCode, content);
+        }
+
+        return JsonSerializer.Deserialize<TOut>(content);
     }
 }

@@ -10,8 +10,6 @@ public class CustomFile
     public string DriveId { get; set; }
 }
 
-
-
 public class FileResponse
 {
     [JsonPropertyName("@odata.context")]
@@ -19,6 +17,7 @@ public class FileResponse
 
     [JsonPropertyName("@microsoft.graph.downloadUrl")]
     public string microsoftgraphdownloadUrl { get; set; }
+
     public DateTime createdDateTime { get; set; }
     public string eTag { get; set; }
     public string id { get; set; }

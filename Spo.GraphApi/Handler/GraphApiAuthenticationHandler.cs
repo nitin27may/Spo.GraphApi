@@ -14,6 +14,7 @@ internal class GraphApiAuthenticationHandler : DelegatingHandler
     private readonly IDistributedCache _distributedCache;
     private readonly ILogger<GraphApiAuthenticationHandler> _logger;
     private readonly GraphApiOptions _graphApiOptions;
+
     public GraphApiAuthenticationHandler(
         IDistributedCache distributedCache,
         ILogger<GraphApiAuthenticationHandler> logger,

@@ -9,4 +9,3 @@ public class SiteDetails
     public DateTime lastModifiedDateTime { get; set; }
     public string webUrl { get; set; }
 }
-
