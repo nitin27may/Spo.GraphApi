@@ -15,4 +15,9 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Spo.Common\Spo.Models.csproj" />
+    <ProjectReference Include="..\Spo.GraphApi\Spo.GraphApi.csproj" />
+  </ItemGroup>
+
 </Project>
