@@ -7,7 +7,6 @@ public class CustomFile
 {
     public string Name { get; set; }
     public IFormFile File { get; set; }
-    public string DriveId { get; set; }
 }
 
 public class FileResponse

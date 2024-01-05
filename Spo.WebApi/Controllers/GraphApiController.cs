@@ -9,35 +9,32 @@ namespace Spo.WebApi.Controllers;
 public class GraphApiController : ControllerBase
 {
     private readonly ILogger<GraphApiController> _logger;
-    private readonly IGraphApiCientFactory _graphApiCientFactory;
+    private readonly IGraphApiCient _graphApiCient;
 
     public GraphApiController(ILogger<GraphApiController> logger, IGraphApiCientFactory graphApiCientFactory)
     {
         _logger = logger;
-        _graphApiCientFactory = graphApiCientFactory;
+        _graphApiCient = graphApiCientFactory.Create();
     }
 
     [HttpGet]
     [Route("site/{siteName}")]
     public async Task<SiteDetails> GetSiteId(string siteName)
     {
-        var _graphApiCient = _graphApiCientFactory.Create();
         return await _graphApiCient.GetSiteId(siteName);
     }
 
     [HttpGet]
-    [Route("site/{siteId}/drives")]
-    public async Task<List<Drive>> GetDrives(string siteId)
+    [Route("site/{siteName}/drives")]
+    public async Task<List<Drive>> GetDrives(string siteName)
     {
-        var _graphApiCient = _graphApiCientFactory.Create();
-        return await _graphApiCient.GetDrives(siteId);
+        return await _graphApiCient.GetDrives(siteName);
     }
 
     [HttpPost, DisableRequestSizeLimit]
-    [Route("site/{driveId}/Upload")]
-    public async Task<FileResponse> Upload([FromForm] CustomFile customFile)
+    [Route("site/{siteName}/{drivename}/Upload")]
+    public async Task<FileResponse> Upload(string siteName, string drivename, [FromForm] CustomFile customFile)
     {
-        var _graphApiCient = _graphApiCientFactory.Create();
-        return await _graphApiCient.UploadFile(customFile);
+        return await _graphApiCient.UploadFile(siteName, drivename, customFile);
     }
 }

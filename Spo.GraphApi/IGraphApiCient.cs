@@ -4,9 +4,9 @@ namespace Spo.GraphApi;
 
 public interface IGraphApiCient
 {
-    Task<SiteDetails> GetSiteId(string siteName);
+    Task<SiteDetails> GetSiteId(string siteName, CancellationToken cancellationToken = default);
 
-    Task<List<Drive>> GetDrives(string siteId);
+    Task<List<Drive>> GetDrives(string siteName);
 
-    Task<FileResponse> UploadFile(CustomFile customFile);
+    Task<FileResponse> UploadFile(string siteName, string driveName, CustomFile customFile);
 }
