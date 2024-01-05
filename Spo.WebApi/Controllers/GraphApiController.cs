@@ -32,9 +32,9 @@ public class GraphApiController : ControllerBase
     }
 
     [HttpPost, DisableRequestSizeLimit]
-    [Route("site/{driveId}/Upload")]
-    public async Task<FileResponse> Upload([FromForm] CustomFile customFile)
+    [Route("site/{siteName}/{drivename}/Upload")]
+    public async Task<FileResponse> Upload(string siteName, string drivename, [FromForm] CustomFile customFile)
     {
-        return await _graphApiCient.UploadFile(customFile);
+        return await _graphApiCient.UploadFile(siteName, drivename, customFile);
     }
 }

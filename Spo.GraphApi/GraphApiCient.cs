@@ -67,9 +67,9 @@ internal class GraphApiCient : IGraphApiCient
         return (await GetAsync<DriveDetails>($"/sites/{siteId}/drives/{driveId}/items/root/children?$select=id,name,description,webUrl")).value;
     }
 
-    public async Task<FileResponse> UploadFile(CustomFile customFile)
+    public async Task<FileResponse> UploadFile(string siteName, string driveName, CustomFile customFile)
     {
-        var driveDetals = await GetDrive(customFile.SiteName, customFile.DriveName);
+        var driveDetals = await GetDrive(siteName, driveName);
 
         await using var msStream = new MemoryStream();
         await customFile.File.CopyToAsync(msStream);

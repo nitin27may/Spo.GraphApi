@@ -8,5 +8,5 @@ public interface IGraphApiCient
 
     Task<List<Drive>> GetDrives(string siteName);
 
-    Task<FileResponse> UploadFile(CustomFile customFile);
+    Task<FileResponse> UploadFile(string siteName, string driveName, CustomFile customFile);
 }
