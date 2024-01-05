@@ -28,11 +28,25 @@ internal class GraphApiCient : IGraphApiCient
         return (await GetAsync<DriveDetails>($"/sites/{siteId}/drives?$select=id,name,description,webUrl")).value;
     }
 
+    public async Task<Drive?> GetDrive(string siteName, string DriveName)
+    {
+        var siteDetails = await GetSiteId(siteName);
+        var drives = (await GetAsync<DriveDetails>($"/sites/{siteDetails.id}/drives?$select=id,name,description,webUrl")).value;
+        return drives?.FirstOrDefault(x => x.name == DriveName);
+    }
+
+    public async Task<List<Drive>> GetDriveItems(string siteId, string driveId)
+    {
+        return (await GetAsync<DriveDetails>($"/sites/{siteId}/drives/{driveId}/items/root/children?$select=id,name,description,webUrl")).value;
+    }
+
     public async Task<FileResponse> UploadFile(CustomFile customFile)
     {
+        var driveDetals = await GetDrive(customFile.SiteName, customFile.DriveName);
+
         await using var msStream = new MemoryStream();
         await customFile.File.CopyToAsync(msStream);
-        return await UploadAsync<FileResponse>($"drives/{customFile.DriveId}/items/root:/{customFile.Name}:/content?@microsoft.graph.conflictBehavior=rename", msStream.ToArray()); ;
+        return await UploadAsync<FileResponse>($"drives/{driveDetals.id}/items/root:/{customFile.Name}:/content?@microsoft.graph.conflictBehavior=rename", msStream.ToArray()); ;
     }
 
     private async Task<T> GetAsync<T>(string endpoint, CancellationToken cancellationToken = default)
