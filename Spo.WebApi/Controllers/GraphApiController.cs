@@ -25,10 +25,10 @@ public class GraphApiController : ControllerBase
     }
 
     [HttpGet]
-    [Route("site/{siteId}/drives")]
-    public async Task<List<Drive>> GetDrives(string siteId)
+    [Route("site/{siteName}/drives")]
+    public async Task<List<Drive>> GetDrives(string siteName)
     {
-        return await _graphApiCient.GetDrives(siteId);
+        return await _graphApiCient.GetDrives(siteName);
     }
 
     [HttpPost, DisableRequestSizeLimit]

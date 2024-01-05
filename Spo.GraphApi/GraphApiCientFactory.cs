@@ -24,6 +24,6 @@ public class GraphApiCientFactory : IGraphApiCientFactory
         GraphApiAuthenticationHandler authHandler = new GraphApiAuthenticationHandler(_distributedCache, _loggerFactory.CreateLogger<GraphApiAuthenticationHandler>(), _options);
         HttpClient httpClient = new HttpClient(authHandler);
 
-        return new GraphApiCient(httpClient, _options.Value, _loggerFactory.CreateLogger<GraphApiCient>());
+        return new GraphApiCient(httpClient, _options.Value, _loggerFactory.CreateLogger<GraphApiCient>(), _distributedCache);
     }
 }
