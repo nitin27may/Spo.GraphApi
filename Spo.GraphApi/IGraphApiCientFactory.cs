@@ -1,7 +1,6 @@
-﻿namespace Spo.GraphApi
+﻿namespace Spo.GraphApi;
+
+public interface IGraphApiCientFactory
 {
-    public interface IGraphApiCientFactory
-    {
-        IGraphApiCient Create();
-    }
+    IGraphApiCient Create();
 }
