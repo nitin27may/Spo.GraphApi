@@ -9,19 +9,18 @@ namespace Spo.WebApi.Controllers;
 public class GraphApiController : ControllerBase
 {
     private readonly ILogger<GraphApiController> _logger;
-    private readonly IGraphApiCientFactory _graphApiCientFactory;
+    private readonly IGraphApiCient _graphApiCient;
 
     public GraphApiController(ILogger<GraphApiController> logger, IGraphApiCientFactory graphApiCientFactory)
     {
         _logger = logger;
-        _graphApiCientFactory = graphApiCientFactory;
+        _graphApiCient = graphApiCientFactory.Create();
     }
 
     [HttpGet]
     [Route("site/{siteName}")]
     public async Task<SiteDetails> GetSiteId(string siteName)
     {
-        var _graphApiCient = _graphApiCientFactory.Create();
         return await _graphApiCient.GetSiteId(siteName);
     }
 
@@ -29,7 +28,6 @@ public class GraphApiController : ControllerBase
     [Route("site/{siteId}/drives")]
     public async Task<List<Drive>> GetDrives(string siteId)
     {
-        var _graphApiCient = _graphApiCientFactory.Create();
         return await _graphApiCient.GetDrives(siteId);
     }
 
@@ -37,7 +35,6 @@ public class GraphApiController : ControllerBase
     [Route("site/{driveId}/Upload")]
     public async Task<FileResponse> Upload([FromForm] CustomFile customFile)
     {
-        var _graphApiCient = _graphApiCientFactory.Create();
         return await _graphApiCient.UploadFile(customFile);
     }
 }

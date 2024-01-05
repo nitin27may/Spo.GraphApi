@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Spo.Common\Spo.Models.csproj" />
     <ProjectReference Include="..\Spo.GraphApi\Spo.GraphApi.csproj" />
   </ItemGroup>
 
